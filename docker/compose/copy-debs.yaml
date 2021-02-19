@@ -16,23 +16,30 @@ version: '3.6'
 
 services:
 
-  intkey-tp-python:
-    image: sawtooth-intkey-tp-python:${ISOLATION_ID}
-    volumes:
-      - ../../build/debs:/build/debs
-    command: |
-      bash -c "
-        cp /tmp/*.deb /build/debs
-      "
+  # intkey-tp-python:
+  #   image: sawtooth-intkey-tp-python:${ISOLATION_ID}
+  #   volumes:
+  #     - ../../build/debs:/build/debs
+  #   command: |
+  #     bash -c "
+  #       cp /tmp/*.deb /build/debs
+  #     "
 
-  xo-tp-python:
-    image: sawtooth-xo-tp-python:${ISOLATION_ID}
+  # xo-tp-python:
+  #   image: sawtooth-xo-tp-python:${ISOLATION_ID}
+  #   volumes:
+  #     - ../../build/debs:/build/debs
+  #   command: |
+  #     bash -c "
+  #       cp /tmp/*.deb /build/debs
+      "
+  bbci-tp-python:
+    image: sawtooth-bbci-tp-python:${ISOLATION_ID}
     volumes:
       - ../../build/debs:/build/debs
     command: |
       bash -c "
         cp /tmp/*.deb /build/debs
-      "
 
   python-sdk:
     image: sawtooth-sdk-python:${ISOLATION_ID}
@@ -43,20 +50,20 @@ services:
         cp /tmp/*.deb /build/debs
       "
 
-  intkey-tests:
-    image: sawtooth-intkey-tests:${ISOLATION_ID}
-    volumes:
-      - ../../build/debs:/build/debs
-    command: |
-      bash -c "
-        cp /tmp/*.deb /build/debs
-      "
+  # intkey-tests:
+  #   image: sawtooth-intkey-tests:${ISOLATION_ID}
+  #   volumes:
+  #     - ../../build/debs:/build/debs
+  #   command: |
+  #     bash -c "
+  #       cp /tmp/*.deb /build/debs
+  #     "
 
-  xo-tests:
-    image: sawtooth-xo-tests:${ISOLATION_ID}
-    volumes:
-      - ../../build/debs:/build/debs
-    command: |
-      bash -c "
-        cp /tmp/*.deb /build/debs
-      "
+  # xo-tests:
+  #   image: sawtooth-xo-tests:${ISOLATION_ID}
+  #   volumes:
+  #     - ../../build/debs:/build/debs
+  #   command: |
+  #     bash -c "
+  #       cp /tmp/*.deb /build/debs
+  #     "

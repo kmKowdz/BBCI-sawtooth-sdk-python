@@ -40,7 +40,7 @@ setup(
         ['../../bin/get_version']).decode('utf-8').strip(),
     description='BBCI Application',
     author='KM Alarcon',
-    url='https://github.com/hyperledger/sawtooth-sdk-python',
+    url='https://github.com/kmKowdz/BBCI-v5',
     packages=find_packages(),
     install_requires=[
         'aiohttp',
