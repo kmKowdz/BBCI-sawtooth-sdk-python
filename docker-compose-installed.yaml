@@ -44,6 +44,20 @@ services:
       - validator
     entrypoint: xo-tp-python -vv -C tcp://validator:4004
 
+  bbci-tp-python:
+    build:
+      context: .
+      dockerfile: examples/bbci_python/Dockerfile-installed-${DISTRO}
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+    image: sawtooth-bbci-tp-python:${ISOLATION_ID}
+    container_name: sawtooth-bbci-tp-python-default
+    depends_on:
+      - validator
+    entrypoint: bbci-tp-python -vv -C tcp://validator:4004
+
   python-sdk:
     build:
       context: .

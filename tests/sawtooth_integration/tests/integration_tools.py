@@ -179,6 +179,30 @@ class XoClient(RestClient):
                 self.make_xo_address(name)))[name]
 
 
+class BBCIClient(RestClient):
+    def __init__(self, url):
+        super().__init__(
+            url=url,
+            namespace='5b7349')
+
+    def decode_data(self, data):
+        return {
+            name: (board, state, player_1, player_2)
+            for name, board, state, player_1, player_2 in [
+                game.split(',')
+                for game in data.decode().split('|')
+            ]
+        }
+
+    def make_bbci_address(self, name):
+        return self.namespace + hashlib.sha512(name.encode()).hexdigest()[0:64]
+
+    def get_game(self, name):
+        return self.decode_data(
+            self.get_leaf(
+                self.make_bbci_address(name)))[name]
+
+
 def wait_until_status(url, status_code=200):
     """Pause the program until the given url returns the required status.
 

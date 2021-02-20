@@ -26,43 +26,7 @@ services:
     command: settings-tp -vv -C tcp://validator:4004
     stop_signal: SIGKILL
 
-  intkey-tp-python:
-    build:
-      context: ../../..
-      dockerfile: ./examples/intkey_python/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: sawtooth-intkey-tp-python$INSTALL_TYPE:$ISOLATION_ID
-    volumes:
-      - $SAWTOOTH_SDK_PYTHON:/project/sawtooth-sdk-python
-    expose:
-      - 4004
-    depends_on:
-      - validator
-    command: intkey-tp-python -vv -C tcp://validator:4004
-    stop_signal: SIGKILL
-
-  xo-tp-python:
-    build:
-      context: ../../..
-      dockerfile: ./examples/xo_python/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: sawtooth-xo-tp-python$INSTALL_TYPE:$ISOLATION_ID
-    volumes:
-      - $SAWTOOTH_SDK_PYTHON:/project/sawtooth-sdk-python
-    expose:
-      - 4004
-    depends_on:
-      - validator
-    command: xo-tp-python -vv -C tcp://validator:4004
-    stop_signal: SIGKILL
-
-bbci-tp-python:
+  bbci-tp-python:
     build:
       context: ../../..
       dockerfile: ./examples/bbci_python/Dockerfile
@@ -95,11 +59,12 @@ bbci-tp-python:
           sawtooth.consensus.algorithm.name=Devmode \
           sawtooth.consensus.algorithm.version=0.1 \
           -o config.batch && \
-        sawadm genesis config-genesis.batch config.batch && \
-        sawtooth-validator --endpoint tcp://validator:8800 -vv \
+        sawadm genesis \
+          config-genesis.batch config.batch && \
+        sawtooth-validator --endpoint tcp://validator:8800 -v \
             --bind component:tcp://eth0:4004 \
-            --bind consensus:tcp://eth0:5005 \
             --bind network:tcp://eth0:8800 \
+            --bind consensus:tcp://eth0:5005 \
     \""
     stop_signal: SIGKILL
 
@@ -114,11 +79,11 @@ bbci-tp-python:
       - 4004
       - 8008
     depends_on:
-      - validator
+     - validator
     command: sawtooth-rest-api -v --connect tcp://validator:4004 --bind rest-api:8008
     stop_signal: SIGKILL
 
-  test-two-families:
+  test-bbci-smoke-python:
     build:
       context: ../../..
       dockerfile: tests/sawtooth_integration/docker/integration-tests.dockerfile
@@ -126,7 +91,7 @@ bbci-tp-python:
         - http_proxy
         - https_proxy
         - no_proxy
-    image: integration-tests:$ISOLATION_ID
+    image: python-sdk-integration-tests:$ISOLATION_ID
     volumes:
       - $SAWTOOTH_SDK_PYTHON:/project/sawtooth-sdk-python
     expose:
@@ -134,14 +99,15 @@ bbci-tp-python:
     depends_on:
       - validator
       - rest-api
-    # Wait for rest_api and genesis
+    # Wait for rest_api
     command: nose2-3
         -c /project/sawtooth-sdk-python/tests/sawtooth_integration/nose2.cfg
         -v
         -s /project/sawtooth-sdk-python/tests/sawtooth_integration/tests
-        test_two_families.TestTwoFamilies
+        test_bbci_smoke.TestXoSmoke
     stop_signal: SIGKILL
     environment:
+      TP_LANG: "python"
       PYTHONPATH: "/project/sawtooth-sdk-python:\
-        /project/sawtooth-sdk-python/examples/intkey_python:\
-        /project/sawtooth-sdk-python/tests"
+        /project/sawtooth-sdk-python/tests:\
+        /project/sawtooth-sdk-python/signing"

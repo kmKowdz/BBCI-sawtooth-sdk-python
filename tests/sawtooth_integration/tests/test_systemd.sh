@@ -20,6 +20,7 @@
 services="
 intkey-tp-python
 xo-tp-python
+bbci-tp-python
 "
 
 if [ -z $ISOLATION_ID ]

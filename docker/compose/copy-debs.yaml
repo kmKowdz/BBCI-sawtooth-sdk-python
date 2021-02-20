@@ -32,7 +32,7 @@ services:
   #   command: |
   #     bash -c "
   #       cp /tmp/*.deb /build/debs
-      "
+  #    "
   bbci-tp-python:
     image: sawtooth-bbci-tp-python:${ISOLATION_ID}
     volumes:

@@ -73,21 +73,28 @@ class TestTwoFamilies(unittest.TestCase):
 
         self.intkey_verifier = IntkeyTestVerifier()
         self.xo_verifier = XoTestVerifier()
+        self.bbci_verifier = BBCITestVerifier()
 
         _send_xo_cmd('sawtooth keygen')
+        _send_bbci_cmd('sawtooth keygen')
 
         self.verify_empty_state()
 
         commands = zip(
             self.intkey_verifier.intkey_cmds,
             self.xo_verifier.xo_cmds)
+            self.bbci_verifier.bbci_cmds)
 
         how_many_updates = 0
 
-        for intkey_cmd, xo_cmd in commands:
+        for intkey_cmd, xo_cmd, bbci_cmd in commands:
             _send_intkey_cmd(intkey_cmd)
             _send_xo_cmd('{} --url {} --wait {}'.format(
                 xo_cmd,
+                'http://rest-api:8008',
+                WAIT))
+            _send_bbci_cmd('{} --url {} --wait {}'.format(
+                bbci_cmd,
                 'http://rest-api:8008',
                 WAIT))
 
@@ -109,6 +116,11 @@ class TestTwoFamilies(unittest.TestCase):
             _get_xo_state(),
             'Expected xo state to be empty')
 
+        self.assertEqual(
+            [],
+            _get_bbci_state(),
+            'Expected bbci state to be empty')
+
     def verify_state_after_n_updates(self, num):
         LOGGER.debug('Verifying state after %s updates', num)
 
@@ -116,6 +128,8 @@ class TestTwoFamilies(unittest.TestCase):
         LOGGER.info('Current intkey state: %s', intkey_state)
         xo_data = _get_xo_data()
         LOGGER.info('Current xo state: %s', xo_data)
+        bbci_data = _get_bbci_data()
+        LOGGER.info('Current bbci state: %s', bbci_data)
 
         self.assertEqual(
             intkey_state,
@@ -126,6 +140,11 @@ class TestTwoFamilies(unittest.TestCase):
             xo_data,
             self.xo_verifier.state_after_n_updates(num),
             'Wrong xo state')
+
+        self.assertEqual(
+            bbci_data,
+            self.bbci_verifier.state_after_n_updates(num),
+            'Wrong bbci state')
 
 
 # sending commands
@@ -138,6 +157,13 @@ def _send_xo_cmd(cmd_str):
         stderr=subprocess.PIPE,
         check=True)
 
+def _send_bbci_cmd(cmd_str):
+    LOGGER.info('Sending bbci cmd')
+    subprocess.run(
+        shlex.split(cmd_str),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True)
 
 def _send_intkey_cmd(txns):
     batch = IntkeyMessageFactory().create_batch(txns)
@@ -170,12 +196,24 @@ def _get_xo_data():
     return board, turn, game_name
 
 
+def _get_bbci_data():
+    state = _get_bbci_state()
+    data = b64decode(state[0]['data']).decode().split('|')[0].split(',')
+    game_name, board, turn, _, _ = data
+    return board, turn, game_name
+
+
 def _get_intkey_state():
     state = _get_state_prefix(INTKEY_PREFIX)
     return state
 
 
 def _get_xo_state():
+    state = _get_state_prefix(XO_PREFIX)
+    return state
+
+
+def _get_bbci_state():
     state = _get_state_prefix(XO_PREFIX)
     return state
 
@@ -213,6 +251,31 @@ class XoTestVerifier:
             'xo take game 9 --wait {}'.format(WAIT),
             'xo create game --wait {}'.format(WAIT),
             'xo take game 4 --wait {}'.format(WAIT),
+        )
+
+    def state_after_n_updates(self, num):
+        state = {
+            0: ('---------', 'P1-NEXT', 'game'),
+            1: ('----X----', 'P2-NEXT', 'game'),
+            2: ('----X---O', 'P1-NEXT', 'game'),
+            3: ('---XX---O', 'P2-NEXT', 'game')
+        }
+
+        try:
+            return state[num]
+        except KeyError:
+            return ()
+
+
+class BBCITestVerifier:
+    def __init__(self):
+        self.bbci_cmds = (
+            'bbci create game --wait {}'.format(WAIT),
+            'bbci take game 5 --wait {}'.format(WAIT),
+            'bbci take game 5 --wait {}'.format(WAIT),
+            'bbci take game 9 --wait {}'.format(WAIT),
+            'bbci create game --wait {}'.format(WAIT),
+            'bbci take game 4 --wait {}'.format(WAIT),
         )
 
     def state_after_n_updates(self, num):
